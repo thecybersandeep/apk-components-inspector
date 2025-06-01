@@ -69,7 +69,9 @@ It unpacks the APK, enumerates exported activities, services, receivers, and pro
 2. **(Optional)** Create a virtual environment and install dependencies:
 
    ```bash
-   pip3 install androguard rich
+pip3 uninstall androguard -y (fixed)
+pip3 install androguard==3.3.5 rich
+
    ```
 3. **Verify** that `apktool` and `adb` are available:
 
