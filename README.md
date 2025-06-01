@@ -61,6 +61,41 @@ It unpacks the APK, enumerates exported activities, services, receivers, and pro
 3. **Androguard 3.3.5.x+** (pip install androguard==3.3.5)
 4. Unix-like OS (Linux/macOS/WSL) with **ADB** installed and in your `PATH`.
 
+
+### 🛠️ **Quick Setup for `apk-components-inspector` (Compatible with Python 3.8+):**
+
+```bash
+# 🏁 1. Create project folder
+mkdir apk-inspector && cd apk-inspector
+
+# 📦 2. Create a virtual environment
+python3 -m venv venv
+
+# 🔁 3. Activate the environment
+source venv/bin/activate
+
+# ⬆️ 4. Upgrade pip
+pip install --upgrade pip
+
+# 🧠 5. Install working version of androguard and rich
+pip install androguard==3.3.5 rich
+
+# ✅ 6. Test import
+python -c "from androguard.core.bytecodes.apk import APK; print('✅ Androguard is ready!')"
+```
+
+---
+
+### 🚀 To run the tool later:
+
+```bash
+# Activate the virtual environment again
+source venv/bin/activate
+
+# Run your tool
+python apk-components-inspector.py some.apk
+```
+
 ---
 
 ## Setup
