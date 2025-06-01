@@ -56,9 +56,9 @@ It unpacks the APK, enumerates exported activities, services, receivers, and pro
 
 ## Requirements
 
-1. **Python 3.7+**
+1. **Python3.X+**
 2. **apktool 2.6.0+**
-3. **Androguard 4.x+**
+3. **Androguard 3.3.5.x+** (pip install androguard==3.3.5)
 4. Unix-like OS (Linux/macOS/WSL) with **ADB** installed and in your `PATH`.
 
 ---
