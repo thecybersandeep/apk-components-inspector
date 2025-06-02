@@ -363,7 +363,7 @@ class APKAnalyzer:
             from androguard.core.bytecodes.apk import APK
             self.apk = APK(str(self.apk_path))
         except ImportError:
-            console.print("[bold red]Error:[/] androguard not installed. Install with: pip install androguard", style="bold red")
+            console.print("[bold red]Error:[/] androguard not installed. Install with: pip3 install androguard==3.3.5", style="bold red")
             sys.exit(1)
         except Exception as e:
             console.print(f"[bold red]Error loading APK:[/] {e}", style="bold red")
