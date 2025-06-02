@@ -4,6 +4,9 @@
 
 <img width="777" alt="image" src="https://github.com/user-attachments/assets/fdd5ac8b-1e66-4245-a8dd-c06a0e63f824" />
 
+[![License: CC BY-NC-ND 4.0](https://licensebuttons.net/l/by-nc-nd/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
+
+
 
 ---
 
