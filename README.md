@@ -4,7 +4,6 @@
 
 <img width="777" alt="image" src="https://github.com/user-attachments/assets/fdd5ac8b-1e66-4245-a8dd-c06a0e63f824" />
 
-> **Note:** This tool does not guarantee a working exploit for every component. It automates about **70%** of the work, but a pentester must still validate, tweak, and test the generated commands to achieve an actual exploit.
 
 ---
 
@@ -47,10 +46,7 @@ It unpacks the APK, enumerates exported activities, services, receivers, and pro
 * No full web server required (unlike MobSF).
 * Only needs **Python 3**, **apktool**, and the [`androguard`](https://github.com/androguard/androguard) library.
 
-### Customizable & Open Source
 
-* Entire logic resides in a single script: `apk-components-inspector.py`.
-* Modify Smali parsing rules, URI constructors, or extraction routines to suit bespoke frameworks or proprietary code.
 
 ---
 
@@ -130,6 +126,8 @@ This sequence will:
 
 <img width="1624" alt="image" src="https://github.com/user-attachments/assets/16d832c4-5350-4427-a3d9-4a2ff8756b74" />
 
+
+> **Note:** This tool does not guarantee a working exploit for every component. It automates about **70%** of the work, but a pentester must still validate, tweak, and test the generated commands to achieve an actual exploit.
 
 ### Options
 
