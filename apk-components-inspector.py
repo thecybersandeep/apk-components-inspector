@@ -25,6 +25,14 @@ class IntentExtra:
     required: bool = False
     default_value: Optional[str] = None
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "type": self.type,
+            "required": self.required,
+            "default_value": self.default_value,
+        }
+
 class SmaliAnalyzer:
     def __init__(self, decompiled_dir: str, verbose: bool = False, quiet: bool = False):
         self.decompiled_dir = Path(decompiled_dir)
@@ -1287,7 +1295,15 @@ class APKAnalyzer:
 
     def save_results(self, results: Dict[str, Any], output_path: str):
         """Save results to JSON file"""
-        Path(output_path).write_text(json.dumps(results, indent=2))
+        class CustomJSONEncoder(json.JSONEncoder):
+            def default(self, obj):
+                if isinstance(obj, set):
+                    return list(obj)  # Convert set to list for JSON serialization
+                if isinstance(obj, IntentExtra):
+                    return obj.to_dict()
+                return super().default(obj)
+
+        Path(output_path).write_text(json.dumps(results, indent=2, cls=CustomJSONEncoder))
         if not self.quiet:
             console.print(f"\n[green]✓ Results saved to:[/] {output_path}")
 
