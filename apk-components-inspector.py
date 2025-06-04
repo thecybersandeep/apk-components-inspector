@@ -24,6 +24,15 @@ class IntentExtra:
     type: str
     required: bool = False
     default_value: Optional[str] = None
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            "name": self.name,
+            "type": self.type,
+            "required": self.required,
+            "default_value": self.default_value,
+        }
 
 class SmaliAnalyzer:
     def __init__(self, decompiled_dir: str, verbose: bool = False, quiet: bool = False):
@@ -304,7 +313,14 @@ class SmaliAnalyzer:
                 if f'ContentResolver;->{op}' in content or f'ContentProvider;->{op}' in content:
                     operations['operations'].add(op)
                     
-        return operations
+        # Convert sets to lists for JSON serialization
+        return {
+            'uri_patterns': list(operations['uri_patterns']),
+            'paths': list(operations['paths']),
+            'operations': list(operations['operations']),
+            'tables': list(operations['tables']),
+            'columns': list(operations['columns'])
+        }
 
     def analyze_component(self, class_name: str, component_type: str) -> Dict[str, Any]:
         """Analyze component for extras and operations"""
@@ -336,7 +352,9 @@ class SmaliAnalyzer:
                 # Extract extras from relevant methods
                 for method in methods_to_analyze:
                     extras = self._extract_extras_from_method(content, method)
-                    result['extras'].update(extras)
+                    # Convert IntentExtra objects to dictionaries
+                    for key, extra in extras.items():
+                        result['extras'][key] = extra.to_dict()
                     
             except Exception as e:
                 if self.verbose:
@@ -1029,7 +1047,7 @@ class APKAnalyzer:
                 
                 # If we know it supports other operations from smali
                 if 'operations' in provider:
-                    ops = provider['operations'].get('operations', set())
+                    ops = provider['operations'].get('operations', [])
                     
                     if 'insert' in ops:
                         exploits.append({
@@ -1121,8 +1139,16 @@ class APKAnalyzer:
         
         return ""
 
-    def _generate_extra_flag(self, name: str, extra: IntentExtra) -> Tuple[str, str]:
+    def _generate_extra_flag(self, name: str, extra: Dict[str, Any]) -> Tuple[str, str]:
         """Generate appropriate extra flag for ADB command"""
+        # Handle both dict and IntentExtra objects
+        if isinstance(extra, dict):
+            extra_type = extra.get('type', '')
+            default_value = extra.get('default_value')
+        else:
+            extra_type = extra.type
+            default_value = extra.default_value
+            
         # Clean up bundle prefix if present
         display_name = name.replace('bundle.', '')
         
@@ -1150,24 +1176,24 @@ class APKAnalyzer:
         }
         
         # Handle bundle extras
-        if extra.type.startswith('bundle.'):
-            actual_type = extra.type.replace('bundle.', '')
+        if extra_type.startswith('bundle.'):
+            actual_type = extra_type.replace('bundle.', '')
             if actual_type in type_map:
                 flag, value = type_map[actual_type]
                 # Use default value if provided
-                if extra.default_value:
-                    value = extra.default_value
+                if default_value:
+                    value = default_value
                 return f"{flag} {display_name} {value}", f"{display_name}({actual_type})"
                 
-        if extra.type in type_map:
-            flag, value = type_map[extra.type]
+        if extra_type in type_map:
+            flag, value = type_map[extra_type]
             # Use default value if provided
-            if extra.default_value:
-                value = extra.default_value
-            return f"{flag} {display_name} {value}", f"{display_name}({extra.type})"
+            if default_value:
+                value = default_value
+            return f"{flag} {display_name} {value}", f"{display_name}({extra_type})"
         else:
             # For complex types that can't be passed via ADB easily
-            return f"# Complex extra: {display_name} ({extra.type})", f"{display_name}({extra.type})[manual]"
+            return f"# Complex extra: {display_name} ({extra_type})", f"{display_name}({extra_type})[manual]"
 
     def _is_custom_action(self, action: str) -> bool:
         """Check if action is custom (not Android standard)"""
@@ -1287,7 +1313,16 @@ class APKAnalyzer:
 
     def save_results(self, results: Dict[str, Any], output_path: str):
         """Save results to JSON file"""
-        Path(output_path).write_text(json.dumps(results, indent=2))
+        # Custom JSON encoder to handle sets and IntentExtra objects
+        class CustomJSONEncoder(json.JSONEncoder):
+            def default(self, obj):
+                if isinstance(obj, set):
+                    return list(obj)  # Convert set to list for JSON serialization
+                if isinstance(obj, IntentExtra):
+                    return obj.to_dict()
+                return super().default(obj)
+                
+        Path(output_path).write_text(json.dumps(results, indent=2, cls=CustomJSONEncoder))
         if not self.quiet:
             console.print(f"\n[green]✓ Results saved to:[/] {output_path}")
 
