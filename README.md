@@ -4,6 +4,11 @@
 
 <img width="777" alt="image" src="https://github.com/user-attachments/assets/fdd5ac8b-1e66-4245-a8dd-c06a0e63f824" />
 
+## How It Works
+
+<img width="1115" alt="image" src="https://github.com/user-attachments/assets/2751b906-2b46-4e5c-b5e1-ad1f0428e8e4" />
+
+
 [![License: CC BY-NC-ND 4.0](https://licensebuttons.net/l/by-nc-nd/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 
 
@@ -20,130 +25,37 @@ It unpacks the APK, enumerates exported activities, services, receivers, and pro
 
 ---
 
-## Features
-
-### Automated APK Decompilation
-
-* Unpacks and decodes resources via **apktool**.
-* Locates `AndroidManifest.xml` and all relevant Smali files in one step.
-
-### Smali-Level Extraction of Real Intent Extras
-
-* Detects calls like `getStringExtra()`, `getIntExtra()`, `getParcelableExtra()` inside `onCreate`, `onReceive`, etc.
-* Infers data types and placeholder values (e.g., `--es username "test"`, `--ei count 0`).
-
-### Exported Component Enumeration
-
-* Filters only **exported** components (no rooting needed).
-* Lists activities, services, broadcast receivers, and content providers reachable from external processes.
-
-### Automatic ADB Command Generation
-
-* **Activities & Services:** Builds `adb shell am start` / `startservice` with `-n`, `-a`, and `-d` flags.
-* **Broadcast Receivers:** Constructs `adb shell am broadcast` lines.
-* **Content Providers:** Generates `adb shell content query`, `insert`, `update`, or `delete` commands based on discovered URIs and column names.
-
-### Lightweight, No Agent Suggested
-
-* No on-device agent (unlike Drozer).
-* No full web server required (unlike MobSF).
-* Only needs **Python 3**, **apktool**, and the [`androguard`](https://github.com/androguard/androguard) library.
-
-
-
----
-
 ## Requirements
 
 1. **Python3.X+**
 2. **apktool 2.6.0+**
 3. **Androguard 3.3.5** (pip install androguard==3.3.5)
-4. Unix-like OS (Linux/macOS/WSL) with **ADB** installed and in your `PATH`.
+4. Unix-like OS (Linux/macOS/WSL) with tools installed and in your `PATH`.
 
 
-### 🛠️ **Quick Setup for `apk-components-inspector` (Compatible with Python 3.8+):**
-
+## 🚀 Installation
 ```bash
-# 🏁 1. Create project folder
-mkdir apk-inspector && cd apk-inspector
-
-# 📦 2. Create a virtual environment
+git clone https://github.com/thecybersandeep/apk-components-inspector
+cd apk-components-inspector
 python3 -m venv venv
-
-# 🔁 3. Activate the environment
 source venv/bin/activate
-
-# ⬆️ 4. Upgrade pip
-pip install --upgrade pip
-
-# 🧠 5. Install working version of androguard and rich
 pip install androguard==3.3.5 rich
-
 ```
 
 ---
 
-### 🚀 To run the tool later:
-
-```bash
-# Activate the virtual environment again
-source venv/bin/activate
-
 # Run your tool
+
+```
 python apk-components-inspector.py some.apk
 ```
 
 ---
 
-## Setup
-
-1. **Clone or download** this repository—or simply place `apk-components-inspector.py` into your working directory.
-2. **(Optional)** Create a virtual environment and install dependencies:
-
-```bash
-pip3 install androguard==3.3.5 rich
-```
-
-3. **Verify** that `apktool` and `adb` are available:
-
-   ```bash
-   apktool --version
-   ```
-
----
-
-## Usage
-
-### Basic Command
-
-```bash
-python3 apk-components-inspector.py <path/to/app.apk>
-```
-
-This sequence will:
-
-1. Decompile `app.apk` to `<app_name>_decompiled/`.
-2. Parse `AndroidManifest.xml` to identify exported components.
-3. Traverse each component’s Smali code to extract real intent extras.
-4. Print a summary table of components alongside ready-to-run ADB commands.
-
 <img width="1624" alt="image" src="https://github.com/user-attachments/assets/16d832c4-5350-4427-a3d9-4a2ff8756b74" />
 
 
-> **Note:** This tool does not guarantee a working exploit for every component. It automates about **70%** of the work, but a pentester must still validate, tweak, and test the generated commands to achieve an actual exploit.
-
-### Options
-
-```text
-Usage: apk-components-inspector.py [options] <apk_path>
-
-Options:
-  -h, --help           Show help and exit.
-  -v, --verbose        Enable verbose logging (prints each Smali file as it’s processed).
-  -q, --quiet          Minimal output (only show final summary and commands).
-  --keep-workdir       Preserve the decompiled folder instead of deleting it.
-  --output <file>      Write results (component list + ADB commands) to a text file.
-```
+> **Note:** This tool does not guarantee a working exploit for every component. It automates about **74%** of the work, but a pentester must still validate, tweak, and test the generated commands to achieve an actual exploit.
 
 ---
 
