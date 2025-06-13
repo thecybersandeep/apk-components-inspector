@@ -2,7 +2,13 @@
 
 *A simple-to-use Python tool that retrieves and lists exposed functionalities of Android applications (such as activities, services, receivers, and providers), derives actual intent extras attributes from Smali code, and scripts practical ADB commands for Android penetration testing.*
 
-<img width="777" alt="image" src="https://github.com/user-attachments/assets/fdd5ac8b-1e66-4245-a8dd-c06a0e63f824" />
+<p align="center">
+  <img
+    src="https://github.com/user-attachments/assets/79c9430b-a0da-4149-9219-eb7b19ac24ae"
+    alt="image"
+    width="632"
+  />
+</p>
 
 ## How It Works
 
@@ -69,53 +75,6 @@ python apk-components-inspector.py some.apk
 | **Accessibility for All Skill Levels** | ✅ Simple command-line interface—just input the APK for quick results, no complex setup. | ❌ Steep learning curve with agent installation and console expertise needed. | ❌ Requires deep ADB and Android knowledge, inaccessible to beginners. | ❌ Web interface is user-friendly, but exploitation requires manual expertise. |
 | **Focused Exploitation Tasks** | ✅ Targets exported components with laser focus, delivering fast, relevant data. | ❌ Broad dynamic testing dilutes focus on component-specific exploits. | ❌ Unfocused, no guidance for targeting components. | ❌ Broad analysis overwhelms with unrelated data, less focus on components. |
 | **Time-Critical Analysis** | ✅ Automates the process, minimizing manual effort and speeding up analysis. | ❌ Manual interaction and setup make it slower for urgent tasks. | ❌ Slowest due to fully manual command research and creation. | ❌ Slow for exploitation due to manual steps post-analysis. |
-
-
----
-
-## How It Works
-
-1. **Decompile APK**
-   Internally runs:
-
-   ```bash
-   apktool d <apk_path> -o <output_dir> -f
-   ```
-
-   → Unpacks resources and Smali into `<output_dir>/`.
-
-2. **Parse Manifest**
-   Uses Python’s `xml.etree.ElementTree` to read `AndroidManifest.xml` and list components marked with `android:exported="true"` (or implicitly exported in older API levels).
-
-3. **Locate Smali Files**
-   For each exported component’s fully qualified class name (e.g., `com.example.app.LoginActivity` → `smali/.../LoginActivity.smali`), the script loads the corresponding Smali file(s).
-
-4. **Extract Real Extras**
-   Inside each Smali file, it scans relevant methods (`onCreate`, `onHandleIntent`, `onReceive`) for patterns such as:
-
-   ```smali
-   invoke-virtual {p0, v0, "username", v1}, Landroid/content/Intent;->getStringExtra(Ljava/lang/String;)Ljava/lang/String;
-   ```
-
-   Whenever it sees `get<Type>Extra("some_key")`, it captures `some_key` and infers `<Type>` to decide between `--es`, `--ei`, etc., assigning a placeholder (e.g., `"test"` for strings, `0` for ints, `true` for booleans).
-
-5. **Build ADB Commands**
-
-   * **Activities/Services/Broadcasts:**
-
-     * `adb shell am start|service|broadcast`
-     * `-n <package>/<ComponentClass>`
-     * If `<intent-filter>` actions or data URIs exist, append `-a <action>` and `-d <URI>`.
-     * For detected extras: append `-e` / `--es` / `--ei` / `--ez` with placeholder values.
-   * **Content Providers:**
-
-     * Reads provider authorities and path segments from `AndroidManifest.xml`.
-     * If Smali CRUD calls reveal table/column names (e.g., `query("notes", new String[]{"_id","title","content"},…)`), it generates:
-
-       ```bash
-       adb shell content query --uri content://<authority>/<path>
-       adb shell content insert --uri content://<authority>/<path> --bind title:s:"Sample" --bind content:s:"Data"
-       ```
 
 
 ---
