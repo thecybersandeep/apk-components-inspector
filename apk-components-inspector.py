@@ -1186,6 +1186,7 @@ class APKAnalyzer:
         console.print(Rule(style="bright_cyan"))
         console.print(Text("ADB Commands:", style="bold bright_cyan"))
         
+        # Fixed: Disable line wrapping for commands to prevent line breaks
         for comp_name, exploits in component_exploits.items():
             short_name = comp_name.split('.')[-1]
             is_exported = False
@@ -1201,7 +1202,9 @@ class APKAnalyzer:
             for exploit in exploits:
                 if exploit['description']:
                     console.print(f"  [dim]# {exploit['description']}[/dim]")
-                console.print(f"  {exploit['command']}")
+                # Fixed: Print commands without line wrapping
+                # Using Text object with no_wrap=True to prevent line breaks
+                console.print(Text(f"  {exploit['command']}", no_wrap=True))
 
     def save_results(self, results: Dict[str, Any], output_path: str):
         class CustomJSONEncoder(json.JSONEncoder):
