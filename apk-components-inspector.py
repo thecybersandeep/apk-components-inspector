@@ -12,6 +12,8 @@ from rich.console import Console
 from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
+import textwrap
+import os
 
 VERSION = "1.1"
 AUTHOR = "Sandeep Wawdane"
@@ -1121,6 +1123,44 @@ class APKAnalyzer:
         
         return analysis
 
+    def _format_adb_command(self, command: str, max_width: int = 80) -> str:
+        """Format ADB command with proper line continuation for terminal compatibility"""
+        if len(command) <= max_width:
+            return command
+            
+        # Split command into parts
+        parts = []
+        current_part = ""
+        in_quotes = False
+        
+        i = 0
+        while i < len(command):
+            char = command[i]
+            
+            if char == '"' and (i == 0 or command[i-1] != '\\'):
+                in_quotes = not in_quotes
+                
+            current_part += char
+            
+            # Check if we should split here
+            if not in_quotes and char == ' ' and len(current_part) > max_width - 10:
+                parts.append(current_part.rstrip())
+                current_part = ""
+            
+            i += 1
+            
+        if current_part:
+            parts.append(current_part)
+            
+        # Join with line continuations
+        if len(parts) > 1:
+            formatted = parts[0]
+            for part in parts[1:]:
+                formatted += " \\\n    " + part.lstrip()
+            return formatted
+        else:
+            return command
+
     def print_results(self, results: Dict[str, Any]):
         console.print(Rule(style="bright_cyan"))
         console.print(f"[bold bright_cyan]Package:[/] {results['package']}")
@@ -1186,7 +1226,15 @@ class APKAnalyzer:
         console.print(Rule(style="bright_cyan"))
         console.print(Text("ADB Commands:", style="bold bright_cyan"))
         
-        # Fixed: Disable line wrapping for commands to prevent line breaks
+        # Get terminal width
+        try:
+            terminal_width = os.get_terminal_size().columns
+        except:
+            terminal_width = 80
+            
+        # Use 90% of terminal width for commands
+        max_command_width = int(terminal_width * 0.9)
+        
         for comp_name, exploits in component_exploits.items():
             short_name = comp_name.split('.')[-1]
             is_exported = False
@@ -1202,9 +1250,10 @@ class APKAnalyzer:
             for exploit in exploits:
                 if exploit['description']:
                     console.print(f"  [dim]# {exploit['description']}[/dim]")
-                # Fixed: Print commands without line wrapping
-                # Using Text object with no_wrap=True to prevent line breaks
-                console.print(Text(f"  {exploit['command']}", no_wrap=True))
+                
+                # Format command with proper line continuation
+                formatted_command = self._format_adb_command(exploit['command'], max_command_width)
+                console.print(f"  {formatted_command}")
 
     def save_results(self, results: Dict[str, Any], output_path: str):
         class CustomJSONEncoder(json.JSONEncoder):
@@ -1237,7 +1286,7 @@ Examples:
   %(prog)s app.apk -a                 # Include non-exported activities
   %(prog)s app.apk -o report.json     # Save results to JSON
   %(prog)s app.apk -v                 # Verbose mode
-  %(prog)s app.apk -q -o report.json  # Quiet mode with output
+  %(prog)s app.apk -q                 # Quiet mode (no progress, only results)
   %(prog)s app.apk -c                 # Clean up after analysis
 
 Output includes:
@@ -1253,7 +1302,7 @@ Output includes:
     parser.add_argument('apk_path', nargs='?', help='Path to APK file')
     parser.add_argument('-o', '--output', help='Save results to JSON file')
     parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
-    parser.add_argument('-q', '--quiet', action='store_true', help='Suppress all output except errors')
+    parser.add_argument('-q', '--quiet', action='store_true', help='Suppress progress messages (still shows results)')
     parser.add_argument('-c', '--cleanup', action='store_true', help='Remove decompiled files after analysis')
     parser.add_argument('-a', '--all', action='store_true', help='Include non-exported activities in analysis')
     
@@ -1268,7 +1317,7 @@ Output includes:
         console.print("│ Options:                                                 │")
         console.print("│   -o, --output    Save results to JSON file              │")
         console.print("│   -v, --verbose   Enable verbose output                  │")
-        console.print("│   -q, --quiet     Suppress all output except errors      │")
+        console.print("│   -q, --quiet     Suppress progress messages only        │")
         console.print("│   -c, --cleanup   Remove decompiled files after analysis │")
         console.print("│   -a, --all       Include non-exported activities        │")
         console.print("╰──────────────────────────────────────────────────────────╯")
@@ -1295,8 +1344,9 @@ Output includes:
     if args.output:
         analyzer.save_results(results, args.output)
         
-    if not args.quiet:
-        analyzer.print_results(results)
+    # Always print results (ADB commands) unless there's an error
+    # The quiet flag only suppresses progress messages, not the actual output
+    analyzer.print_results(results)
         
     analyzer.cleanup_dir()
 
